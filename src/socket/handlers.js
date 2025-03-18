@@ -95,9 +95,15 @@ export function setupSocketHandlers(io) {
 
     socket.on('modify_assessment', async (data) => {
       try {
-        const { assessmentId, modifications } = data;
+        const { assessmentId, originalAssessment, modifications } = data;
+        if (!originalAssessment) {
+          throw new Error('Original assessment is required for modification');
+        }
+        
+
         const updatedAssessment = await handleAssessmentModification(
           assessmentId,
+          originalAssessment,
           modifications
         );
         socket.emit('assessment_modified', updatedAssessment);

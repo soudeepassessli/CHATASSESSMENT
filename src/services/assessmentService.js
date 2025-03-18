@@ -78,16 +78,17 @@ export async function handleAssessmentGeneration(params) {
 }
 
 
-export async function handleAssessmentModification(assessmentId, modifications) {
+export async function handleAssessmentModification(assessmentId, originalAssessment, modifications) {
   console.log('Starting assessment modification', { assessmentId, modifications });
   logger.info('Starting assessment modification', { assessmentId, modifications });
+
 
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
     console.log('Initialized Gemini model for modification');
 
-    const prompt = generateModificationPrompt(assessmentId, modifications);
-    console.log('Generated modification prompt');
+    const prompt = generateModificationPrompt(assessmentId, originalAssessment, modifications);
+    console.log('Generated modification prompt',prompt);
 
     const result = await model.generateContent([SYSTEM_PROMPT, prompt]);
     console.log('Received response from Gemini API for modification');
@@ -130,10 +131,14 @@ function generatePrompt(params) {
 Please generate questions that are appropriate for the specified topics and format the response as a JSON object.`;
 }
 
-function generateModificationPrompt(assessmentId, modifications) {
+function generateModificationPrompt(assessmentId, originalAssessment, modifications) {
   console.log('Generating modification prompt for assessment:', assessmentId);
+  console.log('Original assessment:', originalAssessment);
   logger.debug('Generating modification prompt', { assessmentId, modifications });
-  return `Modify the assessment with the following changes:
+  return `Modify the following assessment:
+${JSON.stringify(originalAssessment, null, 2)}
+
+Apply these modifications:
 ${JSON.stringify(modifications, null, 2)}
 
 Please maintain the same structure and format the response as a JSON object.`;
